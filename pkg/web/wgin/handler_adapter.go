@@ -1,26 +1,14 @@
 package wgin
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pvillela/gfoa/pkg/web"
+	log "github.com/sirupsen/logrus"
 )
 
-func pseudoPostHandler(pReq Any, svc func(Any) Any) func(web.Filler) (Any, error) {
-	return func(filler web.Filler) (Any, error) {
-		err := filler(pReq)
-
-		if err != nil {
-			return nil, err
-		}
-
-		resp := svc(pReq)
-
-		return &resp, nil
-	}
-}
+// TODO: Error handling is inconsistent between the two kinds of handler.
 
 func PostHanderMaker(pInput Any, svc func(Any) Any) gin.HandlerFunc {
 
@@ -35,7 +23,7 @@ func PostHanderMaker(pInput Any, svc func(Any) Any) gin.HandlerFunc {
 				// fails, we simply have to stop this
 				// function from continuing to execute
 
-				fmt.Println(err)
+				log.Info(err)
 
 				c.JSON(400, gin.H{
 					"msg":  err.Error(),
@@ -46,7 +34,7 @@ func PostHanderMaker(pInput Any, svc func(Any) Any) gin.HandlerFunc {
 			return nil
 		}
 
-		pseudoHdlr := pseudoPostHandler(pInput, svc)
+		pseudoHdlr := web.PostPseudoHandler(pInput, svc)
 
 		pResp, err := pseudoHdlr(filler)
 
@@ -57,4 +45,27 @@ func PostHanderMaker(pInput Any, svc func(Any) Any) gin.HandlerFunc {
 		c.JSON(http.StatusOK, pResp)
 	}
 
+}
+
+func GeneralGetHanderMaker(svc func(map[string]string) (Any, error)) gin.HandlerFunc {
+
+	return func(c *gin.Context) {
+		params := c.Request.URL.Query()
+		m := make(map[string]string, len(params))
+		for k, vs := range params {
+			m[k] = vs[0]
+		}
+
+		pResp, err := svc(m)
+
+		if err != nil {
+			c.JSON(400, gin.H{
+				"msg":  err.Error(),
+				"code": 888,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, pResp)
+	}
 }
