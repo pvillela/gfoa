@@ -5,9 +5,7 @@ import (
 	"github.com/pvillela/gfoa/examples/transpmtmock/travelsvc/pkg/rpc"
 )
 
-var tripSvc = boot.TripSvcflowboot(config)
-
-func tripSvcAny(pReq interface{}) interface{} {
+func tripSvcflowP(pInput interface{}) interface{} {
 	tripSvc := boot.TripSvcflowboot(config)
-	return tripSvc(*pReq.(*rpc.TripRequest))
+	return tripSvc(*pInput.(*rpc.TripRequest))
 }
