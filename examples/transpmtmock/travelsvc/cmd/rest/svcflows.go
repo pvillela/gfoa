@@ -11,8 +11,8 @@ import (
 
 var tripSvc = boot.TripSvcflowboot(config)
 
-func tripSvcflowP(pInput interface{}) interface{} {
-	return tripSvc(*pInput.(*rpc.TripRequest))
+func tripSvcflowP(pInput interface{}) (interface{}, error) {
+	return tripSvc(*pInput.(*rpc.TripRequest)), nil
 }
 
 func tripSvcflowM(m map[string]string) (interface{}, error) {

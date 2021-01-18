@@ -1,15 +1,15 @@
 package web
 
-func PostPseudoHandler(pReq Any, svc func(Any) Any) func(Filler) (Any, error) {
+func PostPseudoHandler(pReq Any, svc func(Any) (Any, error)) func(Filler) (Any, error) {
 	return func(filler Filler) (Any, error) {
 		err := filler(pReq)
 
 		if err != nil {
-			return nil, err
+			return nil, FillerError{err}
 		}
 
-		resp := svc(pReq)
+		resp, err := svc(pReq)
 
-		return &resp, nil
+		return &resp, err
 	}
 }

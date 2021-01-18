@@ -8,9 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TODO: Error handling is inconsistent between the two kinds of handler.
-
-func PostHanderMaker(pInput Any, svc func(Any) Any) gin.HandlerFunc {
+func PostHanderMaker(
+	pInput Any,
+	svc func(Any) (Any, error),
+	errorHandler func(Any, web.RequestContext) web.ErrorResult,
+) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		filler := func(pInput Any) error {
@@ -26,28 +28,43 @@ func PostHanderMaker(pInput Any, svc func(Any) Any) gin.HandlerFunc {
 				log.Info(err)
 
 				c.JSON(400, gin.H{
-					"msg":  err.Error(),
-					"code": 999,
+					"msg": err.Error(),
 				})
 				return err
 			}
 			return nil
 		}
 
+		setErrorResponse := func(errorContents Any, ctx web.RequestContext) {
+			errResult := errorHandler(errorContents, web.RequestContext{})
+			c.JSON(errResult.StatusCode, errResult)
+		}
+
+		defer func() {
+			if r := recover(); r != nil {
+				setErrorResponse(r, web.RequestContext{})
+			}
+		}()
+
 		pseudoHdlr := web.PostPseudoHandler(pInput, svc)
 
 		pResp, err := pseudoHdlr(filler)
 
 		if err != nil {
-			return
+			switch err.(type) {
+			case web.FillerError:
+				return
+			default:
+				setErrorResponse(err, web.RequestContext{})
+				return
+			}
 		}
 
 		c.JSON(http.StatusOK, pResp)
 	}
-
 }
 
-func GeneralGetHanderMaker(svc func(map[string]string) (Any, error)) gin.HandlerFunc {
+func SimpleMapGetHanderMaker(svc func(map[string]string) (Any, error)) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		params := c.Request.URL.Query()
