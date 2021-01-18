@@ -24,7 +24,7 @@ func (s RateTripScS) Make() RateTripSc {
 	return func(cardState model.CardState, cardInfo model.CardInfo, devInfo model.DeviceInfo) RateTripResult {
 		str := StrApply(funcTypeExemplar, s.Cfg, string(cardState), string(cardInfo), string(devInfo))
 		fmt.Println("***", str)
-		panic("************ fooooooooooooooo *****************")
-		// return RateTripResult(str)
+		// panic("****** Testing panic handling ******")
+		return RateTripResult(str)
 	}
 }
