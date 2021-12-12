@@ -30,12 +30,12 @@ type TripSvcflowS struct {
 // TripSvcflow is the type of a funtion that receives a trip request from a device,
 // rates the trip, updates the database, and returns a response that includes the decision
 // on whether the trip is allowed and, if applicable, the fare charged.
-type TripSvcflow = func(rpc.TripRequest) rpc.TripResponse
+type TripSvcflow = func(rpc.TripRequest) (rpc.TripResponse, error)
 
 // Make creates a TripSvcflow from its dependencies.
 func (s TripSvcflowS) Make() TripSvcflow {
 	var funcTypeExemplar TripSvcflowS
-	return func(tripRequest rpc.TripRequest) rpc.TripResponse {
+	return func(tripRequest rpc.TripRequest) (rpc.TripResponse, error) {
 		cardInfo := tripRequest.CardInfo
 		deviceInfo := tripRequest.DeviceInfo
 		s.ValidateTripRequestBf(tripRequest)
@@ -48,6 +48,6 @@ func (s TripSvcflowS) Make() TripSvcflow {
 		tripResponse := s.PrepareResponseBf(cardState, rateTripResult)
 		str := StrApply(funcTypeExemplar, "", tripRequest.ToString())
 		fmt.Println("***", str)
-		return tripResponse
+		return tripResponse, nil
 	}
 }

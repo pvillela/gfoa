@@ -17,10 +17,6 @@ import (
 
 var tripSvc = boot.TripSvcflowboot(config)
 
-func tripSvcflowP(pInput interface{}) (interface{}, error) {
-	return tripSvc(*pInput.(*rpc.TripRequest)), nil
-}
-
 func tripSvcflowM(m map[string]string) (interface{}, error) {
 	cardInfo, cardInfoOk := m["cardInfo"]
 	deviceInfo, deviceInfoOk := m["deviceInfo"]
@@ -50,5 +46,5 @@ func tripSvcflowM(m map[string]string) (interface{}, error) {
 		DeviceInfo: model.DeviceInfo(deviceInfo),
 	}
 
-	return tripSvc(input), err
+	return tripSvc(input)
 }

@@ -34,7 +34,7 @@ func main() {
 
 	tripSvc := boot.TripSvcflowboot(config)
 
-	tripResponse := tripSvc(tripRequest)
+	tripResponse, _ := tripSvc(tripRequest)
 
 	fmt.Println("#####", tripResponse)
 }
